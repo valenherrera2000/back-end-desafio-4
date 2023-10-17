@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Productos en Tiempo Real</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        socket.on('productoAgregado', (producto) => {
+            const listaProductos = document.getElementById('listaProductos');
+            const nuevoProducto = document.createElement('li');
+            nuevoProducto.textContent = producto.nombre + ' - ' + producto.precio;
+            listaProductos.appendChild(nuevoProducto);
+        });
+
+        socket.on('productoEliminado', (idProducto) => {
+            const listaProductos = document.getElementById('listaProductos');
+            const productoAEliminar = listaProductos.querySelector(`li[data-id="${idProducto}"]`);
+            if (productoAEliminar) {
+                productoAEliminar.remove();
+            }
+        });
+
+        function agregarProducto() {
+            const nombreProducto = prompt('Ingrese el nombre del producto:');
+            const precioProducto = prompt('Ingrese el precio del producto:');
+            socket.emit('nuevoProducto', { nombre: nombreProducto, precio: precioProducto });
+        }
+
+        function eliminarProducto() {
+            const idProducto = prompt('Ingrese el ID del producto a eliminar:');
+            socket.emit('eliminarProducto', idProducto);
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Lista de Productos en Tiempo Real</h1>
+    <button onclick="agregarProducto()">Agregar Producto</button>
+    <button onclick="eliminarProducto()">Eliminar Producto</button>
+    <ul id="listaProductos">
+        {{#each productos}}
+        <li data-id="{{this.id}}">{{this.nombre}} - {{this.precio}}</li>
+        {{/each}}
+    </ul>
+</body>
+
+</html>
